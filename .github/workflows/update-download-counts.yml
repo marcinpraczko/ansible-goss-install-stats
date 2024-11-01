@@ -2,8 +2,8 @@ name: Update Download Counts
 
 on:
   workflow_dispatch:
-#  schedule:
-#    - cron: '0 0 * * *'  # Runs daily at midnight
+  schedule:
+    - cron: '1 0 * * *'  # Runs daily at 00:01
 
 permissions:
   actions: 'read'
@@ -27,8 +27,11 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
+    - name: Generate timestamp
+      run: echo "BUILD_TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
+
     - name: Run download counts script
-      run: python get-download-counts-from-galaxy.py
+      run: python get-download-counts-from-galaxy.py --fetch
 
     - name: Commit and push changes
       env:
