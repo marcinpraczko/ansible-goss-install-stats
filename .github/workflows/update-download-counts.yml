@@ -1,7 +1,6 @@
 name: Update Download Counts
 
 on:
-  workflow_dispatch:
   schedule:
     - cron: '1 0 * * *'  # Runs daily at 00:01
 
