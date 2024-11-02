@@ -4,7 +4,7 @@ This script fetches the download count of an Ansible role from Ansible Galaxy,
 writes the count to a JSON file, and generates a bar chart of the download counts
 for the last 30 days.
 """
-
+import os.path
 import subprocess
 import re
 import json
@@ -42,15 +42,15 @@ def get_download_count():
 
     match = re.search(r"download_count:\s+(\d+)", result.stdout)
     if match:
-        download_count = int(match.group(1))
-        logger.info("Download count fetched successfully: %d", download_count)
-        return download_count
+        _download_count = int(match.group(1))
+        logger.info("Download count fetched successfully: %d", _download_count)
+        return _download_count
     else:
         logger.warning("Download count not found in output. Output was: %s", result.stdout)
         return None
 
 
-def write_download_count_to_json(_download_count, filename='data/download_counts.json'):
+def write_download_count_to_json(_download_count, filename):
     """
     Writes the download count to a JSON file with the current date and time.
 
@@ -83,18 +83,18 @@ def write_download_count_to_json(_download_count, filename='data/download_counts
             json.dump([data], file, indent=4)
         logger.info("JSON file not found. Created new JSON file and wrote download count.")
 
-def load_and_prepare_data(json_filename):
+def load_and_prepare_data(json_file):
     """
     Loads the JSON data and prepares the DataFrame for further processing.
 
     Args:
-        json_filename (str): The name of the JSON file to read from.
+        json_file (str): The name of the JSON file to read from.
 
     Returns:
         pd.DataFrame: The prepared DataFrame.
     """
-    logger.info("Loading JSON data from file: %s", json_filename)
-    with open(json_filename, 'r') as file:
+    logger.info("Loading JSON data from file: %s", json_file)
+    with open(json_file, 'r') as file:
         data = json.load(file)
     df = pd.DataFrame(data)
 
@@ -144,7 +144,7 @@ def calculate_statistics(merged_df):
     return total_downloads, max_daily_diff
 
 
-def generate_barchart(merged_df, total_downloads, max_daily_diff, svg_filename):
+def generate_barchart(merged_df, total_downloads, max_daily_diff, svg_file):
     """
     Generates a bar chart from the prepared DataFrame and statistics.
 
@@ -152,9 +152,9 @@ def generate_barchart(merged_df, total_downloads, max_daily_diff, svg_filename):
         merged_df (pd.DataFrame): The prepared DataFrame.
         total_downloads (int): The total downloads.
         max_daily_diff (float): The maximum daily difference.
-        svg_filename (str): The name of the SVG file to save the bar chart to.
+        svg_file (str): The name of the SVG file to save the bar chart to.
     """
-    logger.info("Generating bar chart and saving to file: %s", svg_filename)
+    logger.info("Generating bar chart and saving to file: %s", svg_file)
     # Create a bar chart (size is in inches)
     fig, ax = plt.subplots(figsize=(15, 8))
     bars = ax.bar(merged_df['date'], merged_df['download_diff'], color='blue')
@@ -182,25 +182,25 @@ def generate_barchart(merged_df, total_downloads, max_daily_diff, svg_filename):
     plt.tight_layout()
     plt.savefig(svg_filename, format='svg')
     plt.close()
-    logger.info("Bar chart saved as SVG file: %s", svg_filename)
+    logger.info("Bar chart saved as SVG file: %s", svg_file)
 
 
-def create_barchart_from_json(json_filename='download_counts.json', svg_filename='download_counts.svg'):
+def create_barchart_from_json(json_file, svg_file):
     """
     Creates a bar chart from the download counts stored in a JSON file, showing the difference between consecutive days.
 
     Args:
-        json_filename (str): The name of the JSON file to read from.
-        svg_filename (str): The name of the SVG file to save the bar chart to.
+        json_file (str): The name of the JSON file to read from.
+        svg_file (str): The name of the SVG file to save the bar chart to.
     """
-    merged_df = load_and_prepare_data(json_filename)
-    total_downloads, max_daily_diff = calculate_statistics(merged_df)
-    generate_barchart(merged_df, total_downloads, max_daily_diff, svg_filename)
+    data_frame = load_and_prepare_data(json_file)
+    total_downloads, max_daily_diff = calculate_statistics(data_frame)
+    generate_barchart(data_frame, total_downloads, max_daily_diff, svg_file)
 
 
 def generate_html_from_template(image_url, generated_date, description,
-                                template_path='templates/download_stats_page.html.j2',
-                                output_path='docs/index.html'):
+                                template_path, output_path):
+
     """
     Generates an HTML page using a Jinja2 template.
 
@@ -218,7 +218,8 @@ def generate_html_from_template(image_url, generated_date, description,
         template = jinja2.Template(file.read())
 
     # Render the template with the provided data
-    html_content = template.render(image_url=image_url,
+    html_image_url = os.path.basename(image_url)
+    html_content = template.render(image_url=html_image_url,
                                    generated_date=generated_date,
                                    description=description)
 
@@ -230,6 +231,12 @@ def generate_html_from_template(image_url, generated_date, description,
 
 
 if __name__ == '__main__':
+    json_filename = 'data/download_counts.json'
+    svg_filename = 'docs/download_counts.svg'  # Relative reference - for HTML template
+    template_filename = 'templates/download_stats_page.html.j2'
+    html_filename = 'docs/index.html'
+
+
     parser = argparse.ArgumentParser(description='Process download counts.')
     parser.add_argument('--fetch', action='store_true', help='Fetch the download count from Ansible Galaxy')
     args = parser.parse_args()
@@ -237,13 +244,14 @@ if __name__ == '__main__':
     if args.fetch:
         download_count = get_download_count()
         if download_count is not None:
-            write_download_count_to_json(download_count)
+            write_download_count_to_json(download_count, json_filename)
         else:
             logger.error("Download count not available.")
             exit(1)
 
-    create_barchart_from_json(json_filename='data/download_counts.json',
-                              svg_filename='docs/download_counts.svg')
-    generate_html_from_template(image_url='download_counts.svg',
+    create_barchart_from_json(json_file=json_filename, svg_file=svg_filename)
+    generate_html_from_template(image_url=svg_filename,
                                 generated_date=datetime.now().strftime('%Y-%m-%d %H:%M'),
-                                description='Download Counts for the Last 30 Days')
+                                description='Download Counts for the Last 30 Days',
+                                template_path=template_filename,
+                                output_path=html_filename)
