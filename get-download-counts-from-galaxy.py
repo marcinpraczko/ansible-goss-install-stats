@@ -157,15 +157,15 @@ def create_pivot_table(df):
 
     # TODO: Migrate this to separate function - not related with transofrmation but display
     # Display the pivot table with custom formatting
-    logger.info("Pivot table created:")
-    print("+--------------+------------------------+")
-    print("| month_year   |   Sum - download_count |")
-    print("+==============+========================+")
-    for index, row in pivot_table.iterrows():
-        if index == "Total Result":
-            print("+--------------+------------------------+")
-        print(f"| {index:<12} | {row['Sum - download_count']:>22} |")
-    print("+--------------+------------------------+")
+    # logger.info("Pivot table created:")
+    # print("+--------------+------------------------+")
+    # print("| month_year   |   Sum - download_count |")
+    # print("+==============+========================+")
+    # for index, row in pivot_table.iterrows():
+    #     if index == "Total Result":
+    #         print("+--------------+------------------------+")
+    #     print(f"| {index:<12} | {row['Sum - download_count']:>22} |")
+    # print("+--------------+------------------------+")
 
     # Return the pivot table as a DataFrame
     return pivot_table
