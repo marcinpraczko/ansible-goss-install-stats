@@ -414,38 +414,6 @@ def create_barchart_from_df(df, svg_file):
     logger.info("Bar chart saved as SVG file: %s", svg_file)
 
 
-def generate_html_from_template(image_url, generated_date, description,
-                                template_path, output_path):
-
-    """
-    Generates an HTML page using a Jinja2 template.
-
-    Args:
-        image_url (str): The URL of the image to display.
-        generated_date (str): The date when the image was generated.
-        description (str): A description of what the image presents.
-        template_path (str): The path to the Jinja2 template file.
-        output_path (str): The path to save the generated HTML file.
-    """
-    logger.info("Generating HTML page from template: %s", template_path)
-
-    # Load the Jinja2 template
-    with open(template_path) as file:
-        template = jinja2.Template(file.read())
-
-    # Render the template with the provided data
-    html_image_url = os.path.basename(image_url)
-    html_content = template.render(image_url=html_image_url,
-                                   generated_date=generated_date,
-                                   description=description)
-
-    # Save the rendered HTML to a file
-    with open(output_path, 'w') as file:
-        file.write(html_content)
-
-    logger.info("HTML page generated and saved to: %s", output_path)
-
-
 if __name__ == '__main__':
     svg_filename_daily_last30 = 'docs/download_counts_daily.svg'
     svg_filename_monthly      = 'docs/download_counts_monthly.svg'
@@ -476,16 +444,3 @@ if __name__ == '__main__':
 
     create_barchart_from_json(json_file=json_filename, svg_file=svg_filename_daily_last30)
     create_barchart_from_df(pivot_df, svg_filename_monthly)
-
-    # generate_html_from_template(image_url=svg_filename,
-    #                             generated_date=datetime.now().strftime('%Y-%m-%d %H:%M'),
-    #                             description='Download Counts for the Last 30 Days',
-    #                             template_path=template_filename,
-    #                             output_path=html_filename)
-
-    print()
-    print("WARNING")
-    print("FINISH THIS SCRIPT")
-    print("DONE  : Sort images SVG names -- are not correct for now")
-    print("TODO : Curent df are doing sum - instead of comparing values (last day - previous day)")
-    print("TODO : Fix this dates - as collecting is based on total - so match needs be done differently")
