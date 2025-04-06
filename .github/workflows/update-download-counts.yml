@@ -30,7 +30,8 @@ jobs:
       run: echo "BUILD_TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
 
     - name: Run download counts script
-      run: python get-download-counts-from-galaxy.py --fetch
+      run: |
+        make build-all
 
     - name: Commit and push changes
       env:
