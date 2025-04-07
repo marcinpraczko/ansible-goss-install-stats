@@ -2,7 +2,7 @@ name: Update Download Counts
 
 on:
   schedule:
-    - cron: '1 0 * * *'  # Runs daily at 00:01
+    - cron: '2 2 * * *'  # Runs daily at 02:02
 
 permissions:
   actions: 'read'

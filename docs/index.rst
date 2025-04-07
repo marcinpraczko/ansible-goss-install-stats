@@ -9,9 +9,8 @@ Welcome to the documentation for the ``Ansible Goss Install Stats`` project!
 Details about ansible role
 --------------------------
 
-- [Ansible Role: Goss Install](https://galaxy.ansible.com/ui/standalone/roles/marcinpraczko/goss-install/)
-- [GitHub Repository: Goss Install](https://github.com/marcinpraczko/ansible-goss-install)
-
+- `Ansible Role: Goss Install <https://galaxy.ansible.com/ui/standalone/roles/marcinpraczko/goss-install/>`_
+- `GitHub Repository: Goss Install <https://github.com/marcinpraczko/ansible-goss-install>`_
 
 Statistics
 ----------
