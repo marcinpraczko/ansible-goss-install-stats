@@ -14,7 +14,7 @@ import logging
 import jinja2
 import argparse
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # Configure the root logger to suppress logs from external libraries
 logging.basicConfig(level=logging.WARNING, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -221,9 +221,8 @@ def load_and_prepare_data(json_file):
     df = pd.DataFrame(data)
     df['date'] = pd.to_datetime(df['date'], format='%Y%m%d')
 
-    # Prepare data for the last 30 days
-    today = datetime.now()
-    last_30_days = pd.date_range(end=today, periods=30).strftime('%Y%m%d').tolist()
+    yesterday = datetime.now() - timedelta(days=1)
+    last_30_days = pd.date_range(end=yesterday, periods=30).strftime('%Y%m%d').tolist()
     last_30_days_df = pd.DataFrame(last_30_days, columns=['date'])
     last_30_days_df['date'] = pd.to_datetime(last_30_days_df['date'], format='%Y%m%d')
 
@@ -240,8 +239,8 @@ def load_and_prepare_data(json_file):
     merged_30_days_df = pd.merge(last_30_days_df, df, on='date', how='left')
     merged_30_days_df['download_count'] = merged_30_days_df['download_count_y'].fillna(merged_30_days_df['download_count_x'])
     merged_30_days_df = merged_30_days_df[['date', 'download_count']]
+    merged_30_days_df = merged_30_days_df[merged_30_days_df['download_count'] >= 0]
 
-    # print(merged_30_days_df)
     return merged_30_days_df
 
 def calculate_monthly_summary(merged_df):
@@ -330,6 +329,7 @@ def generate_barchart(merged_df, total_downloads, max_daily_diff, svg_file):
         max_daily_diff (float): The maximum daily difference.
         svg_file (str): The name of the SVG file to save the bar chart to.
     """
+
     logger.info("Generating bar chart and saving to file: %s", svg_file)
     # Create a bar chart (size is in inches)
     fig, ax = plt.subplots(figsize=(15, 8))
@@ -420,9 +420,6 @@ if __name__ == '__main__':
     json_filename             = 'data/download_counts.json'
     excel_filename            = 'data/download_counts.xlsx'
     csv_file                  = 'data/download_counts.csv'
-
-    template_filename = 'templates/download_stats_page.html.j2'
-    html_filename = 'docs/index.html'
 
     parser = argparse.ArgumentParser(description='Process download counts.')
     parser.add_argument('--fetch', action='store_true', help='Fetch the download count from Ansible Galaxy')
