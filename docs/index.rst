@@ -6,6 +6,11 @@ Overview
 
 Welcome to the documentation for the ``Ansible Goss Install Stats`` project!
 
+Details about this file
+-----------------------
+
+- Created at: {created_at}
+
 Details about ansible role
 --------------------------
 
